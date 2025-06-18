@@ -51,10 +51,7 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
             Places.initialize(requireContext().applicationContext, "AIzaSyBn-c3eYBrAEKXbuCc1ItIxTb86sAFHNR4")
         }
 
-        val mapFragment = SupportMapFragment.newInstance()
-        childFragmentManager.beginTransaction()
-            .replace(binding.searchMAPContainer.id, mapFragment)
-            .commit()
+        val mapFragment = childFragmentManager.findFragmentById(R.id.search_MAP_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         adapter = BabysitterAdapter(babysittersList) { selectedBabysitter ->
@@ -90,10 +87,8 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
             applyFilter(selectedAddress, selectedLatLng, maxPrice)
         }
 
-        // לחיצה על הכרטיסיה שתופיע בתחתית המסך (BottomSheet) - נווט לפרטי הבייביסטר
         binding.bottomSheet.setOnClickListener {
             selectedBabysitter?.let {
-                // כאן נעשה ניווט ל-BabysitterDetailsFragment עם הפרמטר
                 val fragment = BabysitterDetailsFragment.newInstance(it)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.main_FRAME_container, fragment)
@@ -127,7 +122,6 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
 
         loadBabysitters()
 
-        // מאזין ללחיצה על Marker במפה
         googleMap.setOnMarkerClickListener { marker ->
             val babysitter = marker.tag as? Babysitter
             babysitter?.let {

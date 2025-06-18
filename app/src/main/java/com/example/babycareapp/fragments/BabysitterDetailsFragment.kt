@@ -172,7 +172,7 @@ class BabysitterDetailsFragment : Fragment() {
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
-                width = 750 // אפשר לשחק עם זה (300–500)
+                width = 750
             }
         }
 
@@ -215,16 +215,13 @@ class BabysitterDetailsFragment : Fragment() {
             .addOnSuccessListener { snapshot ->
                 val doc = snapshot.documents.firstOrNull() ?: return@addOnSuccessListener
 
-                // טען ביקורות קיימות ועדכן אותן
                 val reviewsList = babysitter?.reviews?.toMutableList() ?: mutableListOf()
                 reviewsList.add(review)
 
-                // חישוב חדש של מספר מדרגים ודירוג ממוצע
                 val totalRatings = reviewsList.size
                 val totalScore = reviewsList.sumOf { it.rating.toDouble() }
                 val newAverage = (totalScore / totalRatings).toFloat()
 
-                // עדכון במסמך
                 doc.reference.update(
                     mapOf(
                         "reviews" to reviewsList,

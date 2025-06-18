@@ -31,7 +31,6 @@ class HomeFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
 
-        // אתחול RecyclerView
         recyclerView = view.findViewById(R.id.main_RV_babysitters)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = BabysitterAdapter(babysitters) { selectedBabysitter ->
@@ -42,7 +41,6 @@ class HomeFragment : Fragment() {
         }
         recyclerView.adapter = adapter
 
-        // כפתור הוספת בייביסיטרית
         val addButton = view.findViewById<LinearLayout>(R.id.main_BTN_add_babysitter)
         addButton.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -51,7 +49,6 @@ class HomeFragment : Fragment() {
                 .commit()
         }
 
-        // כפתור התנתקות
         val signOutButton = view.findViewById<LinearLayout>(R.id.main_BTN_sign_out)
         signOutButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
@@ -71,7 +68,6 @@ class HomeFragment : Fragment() {
                 for (document in result) {
                     val babysitter = document.toObject(Babysitter::class.java)
 
-                    // טעינת דירוגים וביקורות אם קיימים
                     babysitter.averageRating = (document.getDouble("averageRating") ?: 0.0).toFloat()
                     babysitter.numberOfRatings = (document.getLong("numberOfRatings") ?: 0L).toInt()
 

@@ -20,13 +20,11 @@ class LoginActivity : AppCompatActivity() {
         Log.d("AuthDebug", "User on start: ${currentUser?.email ?: "null"}")
 
         if (currentUser != null) {
-            // המשתמש כבר מחובר – אין צורך ב־signIn
             startActivity(Intent(this, MainActivity::class.java))
             finish()
             return
         }
 
-        // לא מחובר – מפעיל תהליך התחברות
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build()
@@ -44,13 +42,29 @@ class LoginActivity : AppCompatActivity() {
         FirebaseAuthUIActivityResultContract()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            // התחברות הצליחה
             val user = FirebaseAuth.getInstance().currentUser
             Log.d("AuthDebug", "Login success: ${user?.email}")
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+
+            val userMap = hashMapOf(
+                "uid" to user?.uid,
+                "email" to user?.email
+            )
+
+            FirebaseFirestore.getInstance().collection("users")
+                .document(user?.uid ?: "")
+                .set(userMap)
+                .addOnSuccessListener {
+                    Log.d("AuthDebug", "User saved to Firestore")
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("AuthDebug", "Failed to save user: ${e.message}")
+                    Toast.makeText(this, "Error saving user\n", Toast.LENGTH_LONG).show()
+                }
+
         } else {
-            Toast.makeText(this, "ההתחברות נכשלה", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Login failed", Toast.LENGTH_LONG).show()
         }
     }
 }

@@ -21,21 +21,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 💡 בדיקה אם יש משתמש מחובר
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
-            // 💥 אם אין משתמש - מחזירים ישר למסך Login
             val intent = Intent(this, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
-            finish() // חשוב כדי לעצור את onCreate כאן
+            finish()
             return
         }
 
-        // אם יש משתמש, ממשיכים לטעון את האפליקציה
         setContentView(R.layout.activity_main)
 
-        // ברירת מחדל - עמוד הבית
         loadFragment(HomeFragment())
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.main_NAV_bottom)

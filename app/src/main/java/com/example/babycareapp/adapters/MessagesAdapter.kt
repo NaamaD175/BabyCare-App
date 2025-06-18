@@ -36,7 +36,6 @@ class MessagesAdapter(
         val otherUserId = if (parts[0] == currentUserId) parts[1] else parts[0]
         val db = FirebaseFirestore.getInstance()
 
-        // ננסה קודם למצוא babysitter
         db.collection("babysitters")
             .whereEqualTo("uploaderId", otherUserId)
             .get()
@@ -55,7 +54,6 @@ class MessagesAdapter(
                             .commit()
                     }
                 } else {
-                    // אם אין בייביסיטר – ננסה להביא את האימייל מהמסמך users/{uid}
                     db.collection("users").document(otherUserId).get()
                         .addOnSuccessListener { userDoc ->
                             val email = userDoc.getString("email") ?: "Unknown user"

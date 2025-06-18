@@ -31,6 +31,8 @@ class ChatFragment : Fragment() {
     private lateinit var adapter: ChatAdapter
     private lateinit var otherUserId: String
 
+    private lateinit var messagesListener: ValueEventListener
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -74,12 +76,10 @@ class ChatFragment : Fragment() {
         binding.chatRecyclerView.adapter = adapter
 
         if (babysitter != null) {
-            // מציגים את שם הבייביסיטר והתמונה
             binding.chatLBLName.text = babysitter!!.name
             Glide.with(requireContext()).load(babysitter!!.imageUrl)
                 .into(binding.chatIMGBabysitter)
         } else {
-            // אם אין בייביסיטר – מנסים לשלוף את כתובת האימייל מה־users
             FirebaseFirestore.getInstance().collection("users")
                 .document(otherUserId)
                 .get()
@@ -94,7 +94,6 @@ class ChatFragment : Fragment() {
             binding.chatIMGBabysitter.setImageResource(R.drawable.ic_person_placeholder)
         }
 
-        // כפתור שליחה
         binding.chatSendButton.setOnClickListener {
             val text = binding.chatEditText.text.toString().trim()
             if (text.isNotEmpty()) {
@@ -109,8 +108,7 @@ class ChatFragment : Fragment() {
             }
         }
 
-        // מאזין להודעות
-        databaseRef.addValueEventListener(object : ValueEventListener {
+        messagesListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 messageList.clear()
                 for (msgSnap in snapshot.children) {
@@ -119,24 +117,29 @@ class ChatFragment : Fragment() {
                         messageList.add(msg)
                     }
                 }
-                adapter.notifyDataSetChanged()
-                if (messageList.isNotEmpty()) {
-                    binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
+
+                _binding?.let { binding ->
+                    adapter.notifyDataSetChanged()
+                    if (messageList.isNotEmpty()) {
+                        binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
+                    }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(requireContext(), "Error loading messages", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
+
+        databaseRef.addValueEventListener(messagesListener)
 
         return binding.root
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        databaseRef.removeEventListener(messagesListener)
     }
 
     companion object {
