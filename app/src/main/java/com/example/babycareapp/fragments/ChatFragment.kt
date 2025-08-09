@@ -63,6 +63,7 @@ class ChatFragment : Fragment() {
 
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
+        //Back to home page
         binding.chatIMGBack.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.main_FRAME_container, MessagesFragment())

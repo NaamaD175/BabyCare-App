@@ -37,6 +37,7 @@ class AddBabysitterFragment : Fragment() {
     private var selectedLatitude: Double? = null
     private var selectedLongitude: Double? = null
 
+    //Select an image
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -52,23 +53,24 @@ class AddBabysitterFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_add_babysitter, container, false)
 
+        //Initialize API
         if (!Places.isInitialized()) {
             Places.initialize(requireContext().applicationContext, "AIzaSyBn-c3eYBrAEKXbuCc1ItIxTb86sAFHNR4")
         }
-
+        //Back button - back to home page
         val backButton = view.findViewById<ImageButton>(R.id.add_IMG_back)
         backButton.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.main_FRAME_container, HomeFragment())
                 .commit()
         }
-
+        //Details we need to add when we are upload new babysitter
         photoImageView = view.findViewById(R.id.add_IMG_photo)
         nameEditText = view.findViewById(R.id.add_EDT_name)
         priceEditText = view.findViewById(R.id.add_EDT_price)
         aboutEditText = view.findViewById(R.id.add_EDT_about)
         submitButton = view.findViewById(R.id.add_BTN_submit)
-
+        //Open the gallery to add photo and then submit and upload the babysitter
         photoImageView.setOnClickListener { openGallery() }
         submitButton.setOnClickListener { uploadBabysitter() }
 
@@ -80,11 +82,12 @@ class AddBabysitterFragment : Fragment() {
 
         autocompleteFragment.setOnPlaceSelectedListener(object : com.google.android.libraries.places.widget.listener.PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
+                //Need for the use in the maps in the future
                 selectedAddress = place.address ?: ""
                 selectedLatitude = place.latLng?.latitude
                 selectedLongitude = place.latLng?.longitude
             }
-
+            //Error message for failed to get address
             override fun onError(status: com.google.android.gms.common.api.Status) {
                 Toast.makeText(requireContext(), "Failed to get address", Toast.LENGTH_SHORT).show()
             }
@@ -92,37 +95,38 @@ class AddBabysitterFragment : Fragment() {
 
         return view
     }
-
+    //Open the gallery to choose a photo
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         imagePickerLauncher.launch(intent)
     }
-
+    //Upload the babysitter
     private fun uploadBabysitter() {
         val name = nameEditText.text.toString().trim()
         val priceText = priceEditText.text.toString().trim()
         val about = aboutEditText.text.toString().trim()
 
+        //Checks that all fields have been filled in
         if (name.isEmpty() || selectedAddress.isEmpty() || priceText.isEmpty() || about.isEmpty() || selectedImageUri == null || selectedLatitude == null || selectedLongitude == null) {
             Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             return
         }
-
+        //Check that the price was fields correctly
         val price = priceText.toDoubleOrNull()
         if (price == null) {
             Toast.makeText(requireContext(), "Invalid price", Toast.LENGTH_SHORT).show()
             return
         }
-
+        //Upload the babysitter image to the firebase storage
         val imageRef = FirebaseStorage.getInstance().reference
             .child("babysitters_images/${UUID.randomUUID()}.jpg")
-
+        //The upload of the image
         imageRef.putFile(selectedImageUri!!)
             .addOnSuccessListener {
                 imageRef.downloadUrl.addOnSuccessListener { uri ->
                     val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@addOnSuccessListener
-
+                    //Firebase build the object that we can correctly save him
                     val babysitter = Babysitter(
                         name = name,
                         address = selectedAddress,
@@ -133,7 +137,7 @@ class AddBabysitterFragment : Fragment() {
                         latitude = selectedLatitude,
                         longitude = selectedLongitude
                     )
-
+                    //Save in collection babysitters
                     FirebaseFirestore.getInstance().collection("babysitters")
                         .add(babysitter)
                         .addOnSuccessListener {
@@ -147,6 +151,7 @@ class AddBabysitterFragment : Fragment() {
                         }
                 }
             }
+            //Error in upload the image
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "Failed to upload image", Toast.LENGTH_SHORT).show()
             }

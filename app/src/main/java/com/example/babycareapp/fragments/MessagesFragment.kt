@@ -44,7 +44,7 @@ class MessagesFragment : Fragment() {
         return view
     }
 
-
+    //Function to retrieve all chats that include the current user
     private fun loadChats() {
         databaseRef = FirebaseDatabase.getInstance().getReference("chats")
 
@@ -74,6 +74,7 @@ class MessagesFragment : Fragment() {
             }
 
             override fun onCancelled(error: DatabaseError) {
+                //Show error message if database retrieval fails
                 emptyTextView.text = "Error loading chats"
                 emptyTextView.visibility = View.VISIBLE
             }

@@ -47,10 +47,11 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
     ): View {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
 
+        //Initialize Places API if not already initialized
         if (!Places.isInitialized()) {
             Places.initialize(requireContext().applicationContext, "AIzaSyBn-c3eYBrAEKXbuCc1ItIxTb86sAFHNR4")
         }
-
+        //Set up Google Map
         val mapFragment = childFragmentManager.findFragmentById(R.id.search_MAP_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
@@ -69,10 +70,11 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
                 selectedAddress = place.address ?: ""
                 selectedLatLng = place.latLng
 
+                //Move map to selected location
                 selectedLatLng?.let {
                     googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 12f))
                 }
-
+                //Apply filters based on address and price
                 val maxPrice = binding.searchEDTPrice.text.toString().toDoubleOrNull()
                 applyFilter(selectedAddress, selectedLatLng, maxPrice)
             }
@@ -81,12 +83,12 @@ class SearchFragment : Fragment(), OnMapReadyCallback {
                 Toast.makeText(requireContext(), "Failed to get address: ${status.statusMessage}", Toast.LENGTH_SHORT).show()
             }
         })
-
+        //Handle filter button click
         binding.searchBTNFilter.setOnClickListener {
             val maxPrice = binding.searchEDTPrice.text.toString().toDoubleOrNull()
             applyFilter(selectedAddress, selectedLatLng, maxPrice)
         }
-
+        //Handle bottom sheet click to open babysitter details
         binding.bottomSheet.setOnClickListener {
             selectedBabysitter?.let {
                 val fragment = BabysitterDetailsFragment.newInstance(it)

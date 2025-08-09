@@ -21,7 +21,7 @@ class AvailabilityFragment : Fragment() {
     private lateinit var availabilityListContainer: LinearLayout
     private val availabilityMap = mutableMapOf<String, String>()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    private var isOwner = false
+    private var isOwner = false //If the user is someone who upload some babysitter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,19 +39,18 @@ class AvailabilityFragment : Fragment() {
         saveButton = view.findViewById(R.id.availability_save_button)
         titleText = view.findViewById(R.id.availability_title)
         availabilityListContainer = view.findViewById(R.id.availability_list_container)
-
+        //Save button - shown only to owner
         saveButton.visibility = if (isOwner) View.VISIBLE else View.GONE
-
         saveButton.setOnClickListener {
             saveAvailability()
         }
-
+        //Calender view - shows dates and availability
         calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
             val date = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
             val existingNote = availabilityMap[date]
 
             showSingleDateAvailability(date)
-
+            //If owner - can add availability
             if (isOwner) {
                 val input = EditText(requireContext())
                 input.hint = "Add availability details"
@@ -74,6 +73,7 @@ class AvailabilityFragment : Fragment() {
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
+            //Else - can show the availability of the babysitters
             } else {
                 if (existingNote != null) {
                     Toast.makeText(requireContext(), "Available on $date:\n$existingNote", Toast.LENGTH_LONG).show()
@@ -87,6 +87,7 @@ class AvailabilityFragment : Fragment() {
         return view
     }
 
+    //Load the availability from the babysitter - from firestore database
     private fun loadAvailability() {
         FirebaseFirestore.getInstance().collection("babysitters")
             .whereEqualTo("uploaderId", babysitter.uploaderId)
@@ -118,6 +119,7 @@ class AvailabilityFragment : Fragment() {
         availabilityListContainer.addView(textView)
     }
 
+    //Save and upload the availability to firestore database
     private fun saveAvailability() {
         FirebaseFirestore.getInstance().collection("babysitters")
             .whereEqualTo("uploaderId", babysitter.uploaderId)
@@ -133,7 +135,7 @@ class AvailabilityFragment : Fragment() {
                     }
             }
     }
-
+    //Creates a new instance of AvailabilityFragment with a Babysitter object
     companion object {
         fun newInstance(babysitter: Babysitter): AvailabilityFragment {
             val fragment = AvailabilityFragment()

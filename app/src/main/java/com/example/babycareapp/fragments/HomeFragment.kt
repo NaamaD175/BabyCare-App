@@ -34,13 +34,14 @@ class HomeFragment : Fragment() {
         recyclerView = view.findViewById(R.id.main_RV_babysitters)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = BabysitterAdapter(babysitters) { selectedBabysitter ->
+            // When a babysitter is clicked, navigate to the details screen
             parentFragmentManager.beginTransaction()
                 .replace(R.id.main_FRAME_container, BabysitterDetailsFragment.newInstance(selectedBabysitter))
                 .addToBackStack(null)
                 .commit()
         }
         recyclerView.adapter = adapter
-
+        //Add babysitter button
         val addButton = view.findViewById<LinearLayout>(R.id.main_BTN_add_babysitter)
         addButton.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -48,18 +49,18 @@ class HomeFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
-
+        //Sign out button
         val signOutButton = view.findViewById<LinearLayout>(R.id.main_BTN_sign_out)
         signOutButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             startActivity(Intent(requireContext(), LoginActivity::class.java))
             activity?.finish()
         }
-
         loadBabysitters()
         return view
     }
 
+    //Load babysitters from Firestore
     private fun loadBabysitters() {
         FirebaseFirestore.getInstance().collection("babysitters")
             .get()
